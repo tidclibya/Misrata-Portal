@@ -1,29 +1,39 @@
 // تهيئة الخريطة في وسط مصراتة
 var map = L.map('map').setView([32.374, 15.092], 13);
 
-// إضافة طبقة الخريطة (OpenStreetMap)
+// إضافة طبقة الخريطة
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
-// تجميع العلامات لتجنب الازدحام
+// تجميع العلامات
 var markersCluster = L.markerClusterGroup({
     showCoverageOnHover: false,
     zoomToBoundsOnClick: true,
     spiderfyOnMaxZoom: true
 });
 
-// ألوان الفئات - متناسقة مع الهوية (ذهبي، أزرق، أخضر)
-var categoryColors = {
-    restaurants: '#fbbf24', // ذهبي
-    hotels: '#1e3a8a',      // أزرق داكن
-    resorts: '#10b981'      // أخضر (للتمييز)
+// ألوان وأيقونات الفئات (استخدام رموز تعبيرية)
+var categoryIcons = {
+    restaurants: { emoji: '🍽️', color: '#fbbf24' }, // ذهبي
+    hotels: { emoji: '🏨', color: '#1e3a8a' },      // أزرق
+    resorts: { emoji: '🏝️', color: '#10b981' }      // أخضر
 };
 
-// حفظ جميع العلامات للتصفية
+// حفظ جميع العلامات
 var allMarkers = [];
 
-// دوال مساعدة لإنشاء محتوى النافذة المنبثقة حسب الفئة
+// دالة لإنشاء أيقونة مخصصة أكبر
+function createCustomIcon(category) {
+    return L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="background-color: ${categoryIcons[category].color}; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 3px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">${categoryIcons[category].emoji}</div>`,
+        iconSize: [40, 40],
+        popupAnchor: [0, -20]
+    });
+}
+
+// محتوى النافذة المنبثقة
 function getPopupContent(item, category) {
     let content = `<strong>${item.name}</strong><br>`;
     
@@ -47,23 +57,17 @@ function getPopupContent(item, category) {
         if (item.beach) content += `🏖️ شاطئ: نعم<br>`;
     }
     
-    // إضافة زر الاتجاهات
     content += `<a href="https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lng}" target="_blank">🗺️ الاتجاهات</a>`;
     
     return content;
 }
 
-// إضافة جميع العلامات من البيانات
+// إضافة العلامات
 function addMarkers() {
     for (let category in misrataData) {
         misrataData[category].forEach(item => {
-            // إنشاء رمز مخصص
             let marker = L.marker([item.lat, item.lng], {
-                icon: L.divIcon({
-                    className: 'custom-marker',
-                    html: `<div style="background-color: ${categoryColors[category]}; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>`,
-                    iconSize: [20, 20]
-                })
+                icon: createCustomIcon(category)
             });
             
             marker.category = category;
@@ -77,20 +81,13 @@ function addMarkers() {
     map.addLayer(markersCluster);
 }
 
-// تصفية العلامات حسب الفئة
+// تصفية العلامات
 function filterMarkers(category) {
     markersCluster.clearLayers();
     
-    let filteredMarkers = [];
-    if (category === 'all') {
-        filteredMarkers = allMarkers;
-    } else {
-        filteredMarkers = allMarkers.filter(m => m.category === category);
-    }
-    
+    let filteredMarkers = category === 'all' ? allMarkers : allMarkers.filter(m => m.category === category);
     filteredMarkers.forEach(m => markersCluster.addLayer(m));
     
-    // تحديث القائمة الجانبية
     updateItemsList(category);
 }
 
@@ -110,7 +107,7 @@ function updateItemsList(category) {
         
         let details = '';
         if (marker.category === 'restaurants') {
-            details = `<p>📍 ${item.address || ''}</p><p>📞 ${item.phone || ''}</p>`;
+            details = `<p>🍽️ ${item.address || ''}</p><p>📞 ${item.phone || ''}</p>`;
         } else if (marker.category === 'hotels') {
             details = `<p>🏨 ${item.classification || ''}</p><p>🛏️ ${item.rooms || ''} غرفة</p><p>📞 ${item.phone || ''}</p>`;
         } else if (marker.category === 'resorts') {
@@ -126,7 +123,7 @@ function updateItemsList(category) {
     });
 }
 
-// ربط أزرار التصفية
+// أزرار التصفية
 document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -135,7 +132,7 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
     });
 });
 
-// بدء التطبيق
+// بدء التشغيل
 window.onload = function() {
     addMarkers();
     filterMarkers('all');
