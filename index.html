@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خريطة مصراتة التفاعلية</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Marker Cluster CSS (اختياري لتجميع العلامات) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <!-- ملف التنسيقات الخاص بنا -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="map-container">
+        <!-- الشريط الجانبي -->
+        <div id="sidebar">
+            <h2>🇱🇾 خريطة مصراتة</h2>
+            <div id="filters">
+                <button class="filter-btn active" data-category="all">الكل</button>
+                <button class="filter-btn" data-category="restaurants">🍽️ مطاعم</button>
+                <button class="filter-btn" data-category="hotels">🏨 فنادق</button>
+                <button class="filter-btn" data-category="resorts">🏝️ منتجعات</button>
+            </div>
+            <h3>القائمة <span id="count"></span></h3>
+            <div id="items-list"></div>
+        </div>
+        <!-- الخريطة -->
+        <div id="map"></div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Marker Cluster JS -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <!-- ملف البيانات الموحد (سننشئه) -->
+    <script src="data.js"></script>
+    <!-- ملف الخريطة -->
+    <script src="map.js"></script>
+</body>
+</html>
