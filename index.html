@@ -3,20 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>خريطة مصراتة التفاعلية</title>
+    <title>دليل مدينة مصراتة</title>
+    <!-- خط Tajawal -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- Marker Cluster CSS (اختياري لتجميع العلامات) -->
+    <!-- Marker Cluster CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     <!-- ملف التنسيقات الخاص بنا -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- الهيدر -->
+    <header>
+        <div class="header-content">
+            <h1>🇱🇾 دليل مدينة مصراتة</h1>
+            <p class="subtitle">روح العمل، وجوهر النجاح</p>
+        </div>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
     <div id="map-container">
-        <!-- الشريط الجانبي -->
+        <!-- الخريطة (تأتي أولاً في الترتيب) -->
+        <div id="map"></div>
+        
+        <!-- الشريط الجانبي (على اليمين) -->
         <div id="sidebar">
-            <h2>🇱🇾 خريطة مصراتة</h2>
+            <h2>📍 استكشف المدينة</h2>
             <div id="filters">
                 <button class="filter-btn active" data-category="all">الكل</button>
                 <button class="filter-btn" data-category="restaurants">🍽️ مطاعم</button>
@@ -26,15 +42,21 @@
             <h3>القائمة <span id="count"></span></h3>
             <div id="items-list"></div>
         </div>
-        <!-- الخريطة -->
-        <div id="map"></div>
     </div>
+
+    <!-- الفوتر -->
+    <footer>
+        <div class="footer-content">
+            <p>مصراتة: روح العمل، وجوهر النجاح</p>
+            <p class="copyright">جميع الحقوق محفوظة لبلدية مصراتة © 2026</p>
+        </div>
+    </footer>
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- Marker Cluster JS -->
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-    <!-- ملف البيانات الموحد (سننشئه) -->
+    <!-- ملف البيانات الموحد -->
     <script src="data.js"></script>
     <!-- ملف الخريطة -->
     <script src="map.js"></script>
