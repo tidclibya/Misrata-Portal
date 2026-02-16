@@ -15,11 +15,16 @@ var markersCluster = L.markerClusterGroup({
 
 // ألوان وأيقونات الفئات (استخدام رموز تعبيرية)
 var categoryIcons = {
-    restaurants: { emoji: '🍽️', color: '#fbbf24' }, // ذهبي
-    hotels: { emoji: '🏨', color: '#1e3a8a' },      // أزرق
-    resorts: { emoji: '🏝️', color: '#10b981' }      // أخضر
+    restaurants: { emoji: '🍽️', color: '#fbbf24' },
+    hotels: { emoji: '🏨', color: '#1e3a8a' },
+    resorts: { emoji: '🏝️', color: '#10b981' },
+    health: { emoji: '🏥', color: '#ef4444' },      // أحمر
+    education: { emoji: '📚', color: '#8b5cf6' },    // بنفسجي
+    tourism: { emoji: '🗺️', color: '#14b8a6' },      // تركواز
+    business: { emoji: '🏢', color: '#f97316' },      // برتقالي
+    government: { emoji: '🏛️', color: '#6b7280' },     // رمادي
+    logistics: { emoji: '🚢', color: '#064e3b' }       // أخضر داكن
 };
-
 // حفظ جميع العلامات
 var allMarkers = [];
 
