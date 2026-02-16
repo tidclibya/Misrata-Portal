@@ -13,11 +13,13 @@ var markersCluster = L.markerClusterGroup({
     spiderfyOnMaxZoom: true
 });
 
+// ألوان الفئات - متناسقة مع الهوية (ذهبي، أزرق، أخضر)
 var categoryColors = {
     restaurants: '#fbbf24', // ذهبي
     hotels: '#1e3a8a',      // أزرق داكن
-    resorts: '#10b981'      // أخضر (للتباين) أو يمكن جعله ذهبي آخر
+    resorts: '#10b981'      // أخضر (للتمييز)
 };
+
 // حفظ جميع العلامات للتصفية
 var allMarkers = [];
 
