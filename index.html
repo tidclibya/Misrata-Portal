@@ -1,66 +1,987 @@
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دليل مدينة مصراتة</title>
-    <!-- خط Tajawal -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>الخريطة السياحية - طرابلس (فنادق ومعالم)</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- Marker Cluster CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
-    <!-- ملف التنسيقات الخاص بنا -->
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <!-- الهيدر -->
-    <header>
-        <div class="header-content">
-            <h1>🇱🇾 دليل مدينة مصراتة</h1>
-            <p class="subtitle">روح العمل، وجوهر النجاح</p>
-        </div>
-    </header>
-
-    <!-- المحتوى الرئيسي -->
-    <div id="map-container">
-        <!-- الخريطة (على اليسار) -->
-        <div id="map"></div>
-        
-        <!-- الشريط الجانبي (على اليمين) -->
-        <div id="sidebar">
-            <h2>📍 استكشف المدينة</h2>
-            <div id="filters">
-             button class="filter-btn" data-category="health">🏥 صحة</button>
-<button class="filter-btn" data-category="education">📚 تعليم</button>
-<button class="filter-btn" data-category="tourism">🗺️ سياحة</button>
-<button class="filter-btn" data-category="business">🏢 أعمال</button>
-<button class="filter-btn" data-category="government">🏛️ حكومة</button>
-<button class="filter-btn" data-category="logistics">🚢 لوجستيات</button>
-            </div>
-            <h3>القائمة <span id="count"></span></h3>
-            <div id="items-list"></div>
-        </div>
-    </div>
-
-    <!-- الفوتر -->
-    <footer>
-        <div class="footer-content">
-            <p>مصراتة: روح العمل، وجوهر النجاح</p>
-            <p class="copyright">جميع الحقوق محفوظة لبلدية مصراتة © 2026</p>
-        </div>
-    </footer>
-
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Marker Cluster JS -->
-    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-    <!-- ملف البيانات الموحد -->
-    <script src="data.js"></script>
-    <!-- ملف الخريطة -->
-    <script src="map.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: #f0f4f8;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: linear-gradient(145deg, #0b2b4d, #1a4a7a);
+            color: white;
+            padding: 12px 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-title h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .header-title p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .search-box {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 5px 15px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.3);
+            width: 300px;
+            max-width: 100%;
+        }
+
+        .search-box i {
+            color: white;
+            margin-left: 10px;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            width: 100%;
+            font-size: 1rem;
+            padding: 8px 0;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        .search-box input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .sidebar {
+            width: 340px;
+            background: white;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+            z-index: 900;
+            overflow-y: auto;
+        }
+
+        .sidebar.closed {
+            transform: translateX(100%);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: absolute;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                width: 85%;
+                max-width: 320px;
+                z-index: 1100;
+            }
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: linear-gradient(145deg, #f8fafd, #eef2f7);
+            border-bottom: 1px solid #dee2e8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-header h3 {
+            color: #0b2b4d;
+            font-weight: 700;
+            font-size: 1.4rem;
+            margin: 0;
+        }
+
+        .close-sidebar {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #5a6b7c;
+            cursor: pointer;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .close-sidebar {
+                display: block;
+            }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 20px;
+            background: #f9fbfd;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 15px 5px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: transform 0.2s;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,50,100,0.15);
+        }
+
+        .stat-card i {
+            font-size: 2rem;
+            color: #1a4a7a;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #0b2b4d;
+            line-height: 1.2;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.85rem;
+            color: #5a6b7c;
+            font-weight: 500;
+        }
+
+        .filter-section {
+            padding: 15px 20px;
+            border-top: 1px solid #dee2e8;
+            border-bottom: 1px solid #dee2e8;
+            background: white;
+        }
+
+        .filter-title {
+            font-weight: 700;
+            color: #0b2b4d;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .filter-btn {
+            background: #eef2f7;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-family: 'Tajawal', sans-serif;
+            font-weight: 500;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-btn i {
+            font-size: 0.8rem;
+            color: #5a6b7c;
+        }
+
+        .filter-btn.active {
+            background: #1a4a7a;
+            color: white;
+        }
+
+        .filter-btn.active i {
+            color: white;
+        }
+
+        .filter-btn:hover {
+            background: #d0dbe9;
+        }
+
+        .main-filter {
+            padding: 15px 20px 0 20px;
+            background: white;
+        }
+
+        .main-filter-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .main-filter-btn {
+            flex: 1;
+            background: #eef2f7;
+            border: none;
+            padding: 10px;
+            border-radius: 30px;
+            font-weight: 600;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .main-filter-btn.active {
+            background: #1a4a7a;
+            color: white;
+        }
+
+        .sites-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f9fbfd;
+        }
+
+        .site-item {
+            background: white;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-right: 4px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid #eef2f7;
+        }
+
+        .site-item:hover {
+            background: #f0f7ff;
+            border-right-color: #1a4a7a;
+            box-shadow: 0 8px 18px rgba(0,60,120,0.12);
+            transform: scale(1.02);
+        }
+
+        .site-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+            background: linear-gradient(145deg, #1a4a7a, #0b2b4d);
+        }
+
+        .site-info {
+            flex: 1;
+        }
+
+        .site-name {
+            font-weight: 700;
+            color: #0b2b4d;
+            margin-bottom: 4px;
+            font-size: 1rem;
+        }
+
+        .site-type {
+            font-size: 0.8rem;
+            color: #5a6b7c;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .site-type i {
+            font-size: 0.7rem;
+            color: #1a4a7a;
+        }
+
+        .map-container {
+            flex: 1;
+            position: relative;
+            background: #e9ecf1;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+            z-index: 1;
+        }
+
+        .toggle-sidebar {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1a4a7a;
+            color: white;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1200;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .toggle-sidebar:hover {
+            background: #0b2b4d;
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            .toggle-sidebar {
+                display: flex;
+            }
+        }
+
+        .custom-popup .leaflet-popup-content-wrapper {
+            border-radius: 16px;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            font-family: 'Tajawal', sans-serif;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .custom-popup .leaflet-popup-content {
+            margin: 0;
+            padding: 0;
+            width: auto !important;
+            min-width: 240px;
+        }
+
+        .popup-header {
+            background: linear-gradient(145deg, #1a4a7a, #0b2b4d);
+            color: white;
+            padding: 12px 15px;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .popup-body {
+            padding: 12px 15px;
+        }
+
+        .popup-body p {
+            margin: 5px 0;
+            color: #2c3e50;
+            font-size: 0.9rem;
+        }
+
+        .popup-body i {
+            color: #1a4a7a;
+            margin-left: 5px;
+            width: 18px;
+        }
+
+        .leaflet-popup-close-button {
+            color: white !important;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-title">
+        <h1><i class="fas fa-map-marked-alt" style="margin-left: 10px;"></i> خريطة طرابلس السياحية</h1>
+        <p>فنادق، معالم، وأماكن إقامة</p>
+    </div>
+    <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="search-input" placeholder="ابحث عن فندق أو معلم...">
+    </div>
+</header>
+
+<div class="main-container">
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="fas fa-chart-line" style="margin-left: 8px;"></i>المؤشرات</h3>
+            <button class="close-sidebar" id="closeSidebar"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="stats-grid" id="statsContainer"></div>
+
+        <div class="main-filter">
+            <div class="filter-title"><i class="fas fa-layer-group"></i> نوع الموقع</div>
+            <div class="main-filter-buttons" id="mainFilterButtons">
+                <button class="main-filter-btn active" data-main="all"><i class="fas fa-globe"></i> الكل</button>
+                <button class="main-filter-btn" data-main="tourism"><i class="fas fa-landmark"></i> معالم</button>
+                <button class="main-filter-btn" data-main="hotel"><i class="fas fa-hotel"></i> فنادق</button>
+                <button class="main-filter-btn" data-main="apartment"><i class="fas fa-building"></i> شقق</button>
+            </div>
+        </div>
+
+        <div class="filter-section" id="subFilterSection" style="display: none;">
+            <div class="filter-title"><i class="fas fa-star"></i> تصنيف الفنادق</div>
+            <div class="filter-buttons" id="subFilterButtons"></div>
+        </div>
+
+        <div class="sites-list" id="sitesList"></div>
+    </div>
+
+    <div class="map-container">
+        <div id="map"></div>
+    </div>
+
+    <button class="toggle-sidebar" id="toggleSidebar">
+        <i class="fas fa-chevron-right"></i>
+    </button>
+</div>
+
+<script>
+(function() {
+    // ---------- بيانات المعالم السياحية (ثابتة) ----------
+    const tourismSites = [
+        { name: "المدينة القديمة", type: "معلم تاريخي", lat: 32.8925, lng: 13.1800, description: "مركز التراث الإسلامي والأسواق التقليدية", category: "tourism", subCategory: "historic" },
+        { name: "قلعة السرايا الحمراء", type: "معلم تاريخي", lat: 32.8950, lng: 13.1810, description: "أحد أهم المعالم التاريخية في ليبيا", category: "tourism", subCategory: "historic" },
+        { name: "جامع أحمد باشا القرمانلي", type: "مسجد تاريخي", lat: 32.8921, lng: 13.1815, description: "مسجد تاريخي من العهد العثماني", category: "tourism", subCategory: "mosque" },
+        { name: "جامع الناقة", type: "مسجد تاريخي", lat: 32.8930, lng: 13.1795, description: "من أقدم مساجد طرابلس", category: "tourism", subCategory: "mosque" },
+        { name: "متحف السرايا الحمراء", type: "متحف", lat: 32.8952, lng: 13.1809, description: "أكبر متحف في ليبيا", category: "tourism", subCategory: "museum" },
+        { name: "سوق المشير", type: "سوق شعبي", lat: 32.8920, lng: 13.1808, description: "سوق تقليدي للحرف اليدوية", category: "tourism", subCategory: "market" },
+        { name: "سوق الترك", type: "سوق شعبي", lat: 32.8928, lng: 13.1818, description: "سوق تاريخي في المدينة القديمة", category: "tourism", subCategory: "market" },
+        { name: "فندق كورنثيا", type: "فندق", lat: 32.8872, lng: 13.1913, description: "فندق خمس نجوم ومركز مؤتمرات", category: "hotel", subCategory: "5stars" },
+        { name: "فندق الودان", type: "فندق", lat: 32.8905, lng: 13.1860, description: "فندق تاريخي في وسط طرابلس", category: "hotel", subCategory: "unclassified" },
+        { name: "ميدان الشهداء", type: "معلم سياحي", lat: 32.8950, lng: 13.1800, description: "أحد أشهر ميادين طرابلس", category: "tourism", subCategory: "landmark" }
+    ];
+
+    // ---------- بيانات الفنادق من ملف CSV (مضمنة) ----------
+    // تم تنظيف البيانات: تجاهل الصفوف ذات الإحداثيات غير الصالحة أو خارج النطاق التقريبي (lat: 32.7-33.0, lng: 13.0-13.5)
+    const hotelsData = [
+        { name: "فندق برج كورنثيا باب أفريقيا", type: "5 نجوم", lat: 32.89725, lng: 13.17083, description: "فندق", category: "hotel", subCategory: "5stars", rooms: 299, beds: 344, phone: "3351990" },
+        { name: "فندق الليلك", type: "طرابلس", lat: 32.89431, lng: 13.196468, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "021-3342016" },
+        { name: "فندق المهاري رادسون بلو", type: "5 نجوم", lat: 32.8961, lng: 13.19996, description: "فندق", category: "hotel", subCategory: "5stars", rooms: 351, beds: 395, phone: "213407878" },
+        { name: "الفندق الكبير", type: "4 نجوم", lat: 32.89343, lng: 13.18473, description: "فندق", category: "hotel", subCategory: "4stars", rooms: 322, beds: 444, phone: "4445949" },
+        { name: "فندق باب البحر", type: "4 نجوم", lat: 32.89456, lng: 13.16505, description: "فندق", category: "hotel", subCategory: "4stars", rooms: 403, beds: 492, phone: "3350676" },
+        { name: "فندق بلازما", type: "2 نجمتان", lat: 32.88571, lng: 13.16405, description: "فندق", category: "hotel", subCategory: "2stars", rooms: 39, beds: 48, phone: "3331172" },
+        { name: "فندق الواحات", type: "3 نجوم", lat: 32.88737, lng: 13.16897, description: "فندق", category: "hotel", subCategory: "3stars", rooms: 304, beds: 608, phone: "4445051" },
+        { name: "فندق بوابة إفريقيا", type: "3 نجوم", lat: 32.88844, lng: 13.17631, description: "فندق", category: "hotel", subCategory: "3stars", rooms: 50, beds: 108, phone: "4447086" },
+        { name: "فندق الثريا", type: "3 نجوم", lat: 32.8914, lng: 13.17296, description: "فندق", category: "hotel", subCategory: "3stars", rooms: 48, beds: 90, phone: "913332665" },
+        { name: "فندق الضيافة", type: "2 نجمتان", lat: 32.89226, lng: 13.172, description: "فندق", category: "hotel", subCategory: "2stars", rooms: 32, beds: 62, phone: "4448182" },
+        { name: "فندق طيبة", type: "نجمة واحدة", lat: 32.89196, lng: 13.17181, description: "فندق", category: "hotel", subCategory: "1star", rooms: 22, beds: 45, phone: "3333575" },
+        { name: "فندق الكندي", type: "3 نجوم", lat: 32.89234, lng: 13.17304, description: "فندق", category: "hotel", subCategory: "3stars", rooms: 45, beds: 92, phone: "4448123" },
+        { name: "فندق السرايا", type: "2 نجمتان", lat: 32.89165, lng: 13.17589, description: "فندق", category: "hotel", subCategory: "2stars", rooms: 19, beds: 34, phone: "4448621" },
+        { name: "فندق النهر", type: "2 نجمتان", lat: 32.8936, lng: 13.17116, description: "فندق", category: "hotel", subCategory: "2stars", rooms: 35, beds: 70, phone: "4444690" },
+        { name: "فندق القنصل", type: "3 نجوم", lat: 32.89232, lng: 13.17139, description: "فندق", category: "hotel", subCategory: "3stars", rooms: 21, beds: 42, phone: "927000696" },
+        { name: "فندق توباكتس", type: "3 نجوم", lat: 32.88609, lng: 13.16469, description: "فندق", category: "hotel", subCategory: "3stars", rooms: 96, beds: 192, phone: "3344519" },
+        { name: "فندق كليوباترا", type: "2 نجمتان", lat: 32.89206, lng: 13.19292, description: "فندق", category: "hotel", subCategory: "2stars", rooms: 36, beds: 60, phone: "4441886" },
+        { name: "فندق التوفيق", type: "3 نجوم", lat: 32.89108, lng: 13.19269, description: "فندق", category: "hotel", subCategory: "3stars", rooms: 49, beds: 98, phone: "4443192" },
+        { name: "فندق الأندلس", type: "2 نجمتان", lat: 32.89232, lng: 13.17213, description: "فندق", category: "hotel", subCategory: "2stars", rooms: 22, beds: 40, phone: "3343777" },
+        { name: "فندق الفتح", type: "نجمة واحدة", lat: 32.88943, lng: 13.17782, description: "فندق", category: "hotel", subCategory: "1star", rooms: 105, beds: 297, phone: "3343219" },
+        { name: "فندق الفصول الأربعة ( 1 )", type: "3 نجوم", lat: 32.89087, lng: 13.17354, description: "فندق", category: "hotel", subCategory: "3stars", rooms: 52, beds: 104, phone: "3332151" },
+        { name: "فندق النورس", type: "2 نجمتان", lat: 32.89127, lng: 13.19275, description: "فندق", category: "hotel", subCategory: "2stars", rooms: 35, beds: 65, phone: "4446408" },
+        { name: "فندق ديكنة", type: "2 نجمتان", lat: 32.888213, lng: 13.17661, description: "فندق", category: "hotel", subCategory: "2stars", rooms: 28, beds: 56, phone: "4444403" },
+        { name: "فندق الرحاب", type: "2 نجمتان", lat: 32.89318, lng: 13.17289, description: "فندق", category: "hotel", subCategory: "2stars", rooms: 53, beds: 106, phone: "4449279" },
+        { name: "فندق الدوحة", type: "نجمة واحدة", lat: 32.89215, lng: 13.17177, description: "فندق", category: "hotel", subCategory: "1star", rooms: 30, beds: 54, phone: "4449373" },
+        { name: "فندق أسامة", type: "نجمة واحدة", lat: 32.88733, lng: 13.1757, description: "فندق", category: "hotel", subCategory: "1star", rooms: 32, beds: 54, phone: "3338037" },
+        { name: "فندق الشجرة", type: "4 نجوم", lat: 32.89339, lng: 13.19513, description: "فندق", category: "hotel", subCategory: "4stars", rooms: 70, beds: 134, phone: "4449595" },
+        { name: "قرية تاجوراء السياحية", type: "3 نجوم", lat: 32.86274, lng: 13.42945, description: "فندق", category: "hotel", subCategory: "3stars", rooms: 152, beds: 304, phone: "3696061" },
+        { name: "فندق الصفوة للشقق الفندقية", type: "3 نجوم", lat: 32.8903, lng: 13.1886, description: "شقق فندقية", category: "apartment", subCategory: "3stars", rooms: 23, beds: 46, phone: "3334422" },
+        { name: "فندق الشاطئ الذهبي", type: "3 نجوم", lat: 32.8864, lng: 13.16243, description: "فندق", category: "hotel", subCategory: "3stars", rooms: 20, beds: 40, phone: "912125988" },
+        { name: "فندق الديار", type: "نجمة واحدة", lat: 32.89153, lng: 13.17454, description: "فندق", category: "hotel", subCategory: "1star", rooms: 33, beds: 57, phone: "913111555" },
+        { name: "فندق المختار", type: "2 نجمتان", lat: 32.89212, lng: 13.17151, description: "فندق", category: "hotel", subCategory: "2stars", rooms: 48, beds: 96, phone: "4449521" },
+        { name: "فندق الدبلوماسي", type: "4 نجوم", lat: 32.88918, lng: 13.17352, description: "فندق", category: "hotel", subCategory: "4stars", rooms: 64, beds: 128, phone: "4447105" },
+        { name: "فندق الاخوة", type: "2 نجمتان", lat: 32.8916, lng: 13.1741, description: "فندق", category: "hotel", subCategory: "2stars", rooms: 72, beds: 144, phone: "3336222" },
+        { name: "فندق السفير", type: "2 نجمتان", lat: 32.89137, lng: 13.17289, description: "فندق", category: "hotel", subCategory: "2stars", rooms: 42, beds: 84, phone: "4443185" },
+        { name: "فندق السلاسل الذهبية", type: "2 نجمتان", lat: 32.88532, lng: 13.16231, description: "فندق", category: "hotel", subCategory: "2stars", rooms: 56, beds: 93, phone: "4446864" },
+        { name: "فندق السندباد", type: "2 نجمتان", lat: 32.88596, lng: 13.16273, description: "فندق", category: "hotel", subCategory: "2stars", rooms: 26, beds: 52, phone: "4446864" },
+        { name: "فندق سفارى", type: "2 نجمتان", lat: 32.89316, lng: 13.17149, description: "فندق", category: "hotel", subCategory: "2stars", rooms: 52, beds: 96, phone: "3333008" },
+        { name: "فندق الخليج", type: "3 نجوم", lat: 32.88912, lng: 13.17574, description: "فندق", category: "hotel", subCategory: "3stars", rooms: 36, beds: 75, phone: "21331346" },
+        { name: "فندق الريان", type: "3 نجوم", lat: 32.89063, lng: 13.17258, description: "فندق", category: "hotel", subCategory: "3stars", rooms: 49, beds: 98, phone: "4445544" },
+        { name: "فندق الصافي", type: "3 نجوم", lat: 32.88948, lng: 13.1742, description: "فندق", category: "hotel", subCategory: "3stars", rooms: 41, beds: 62, phone: "4444011" },
+        { name: "فندق مرحبا", type: "2 نجمتان", lat: 32.89188, lng: 13.19337, description: "فندق", category: "hotel", subCategory: "2stars", rooms: 61, beds: 98, phone: "3334646" },
+        { name: "فندق المأمون", type: "3 نجوم", lat: 32.89429, lng: 13.17422, description: "فندق", category: "hotel", subCategory: "3stars", rooms: 45, beds: 90, phone: "3333372" },
+        { name: "فندق الانتصار", type: "", lat: 32.89294, lng: 13.17436, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 22, beds: 55, phone: "925284810" },
+        { name: "فندق الفردوس", type: "1 نجمة", lat: 32.89315, lng: 13.17684, description: "فندق", category: "hotel", subCategory: "1star", rooms: 33, beds: 65, phone: "913211735" },
+        { name: "فندق الجبل الأخضر", type: "3 نجوم", lat: 32.89486, lng: 13.17295, description: "فندق", category: "hotel", subCategory: "3stars", rooms: 45, beds: 114, phone: "3336603" },
+        { name: "فندق بلخير", type: "3 نجوم", lat: 32.8907, lng: 13.17728, description: "فندق", category: "hotel", subCategory: "3stars", rooms: 30, beds: 74, phone: "4448360" },
+        { name: "فندق غصن الذهب", type: "", lat: 32.89133, lng: 13.16923, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 6, beds: 15, phone: "4443243" },
+        { name: "فندق بيروت", type: "", lat: 32.89186, lng: 13.17501, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 9, beds: 25, phone: "3337885" },
+        { name: "فندق الياسمينة", type: "", lat: 32.88789, lng: 13.18507, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 42, beds: 80, phone: "4446661" },
+        { name: "فندق زميت السياحي", type: "", lat: 32.89958, lng: 13.17576, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 14, beds: 15, phone: "4440683" },
+        { name: "فندق النجمة", type: "", lat: 32.88931, lng: 13.17925, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 32, beds: 56, phone: "926853303" },
+        { name: "فندق قصر ليبيا", type: "", lat: 32.89311, lng: 13.19433, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 378, beds: 649, phone: "3331181/9" },
+        { name: "فندق الودان", type: "", lat: 32.89313, lng: 13.1909, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 91, beds: 180, phone: "3330041/45" },
+        { name: "فندق السفينة الزرقاء", type: "", lat: 32.89028, lng: 13.18844, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 91, beds: 165, phone: "3511164" },
+        { name: "فندق المتوسط", type: "", lat: 32.88922, lng: 13.18494, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 36, beds: 72, phone: "213331210" },
+        { name: "فندق عمير", type: "", lat: 32.89205, lng: 13.17267, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 58, beds: 126, phone: "" },
+        { name: "فندق طرابلس الدولى", type: "", lat: 32.88995, lng: 13.17533, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 63, beds: 100, phone: "213344921" },
+        { name: "فندق بيت الشرق", type: "", lat: 32.89234, lng: 13.17232, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 49, beds: 113, phone: "" },
+        { name: "فندق السرايا السياحي", type: "", lat: 32.88849, lng: 13.17016, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 40, beds: 80, phone: "3345082" },
+        { name: "فندق الخان الطرابلسي", type: "", lat: 32.8984, lng: 13.17657, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 14, beds: 29, phone: "3344917" },
+        { name: "فندق ليبيا السياحي", type: "", lat: 32.88714, lng: 13.16452, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 70, beds: 77, phone: "3331398" },
+        { name: "فندق المبروك", type: "", lat: 32.89304, lng: 13.17221, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 37, beds: 70, phone: "217155680" },
+        { name: "فندق ذا ريسدنس", type: "", lat: 32.88884, lng: 13.19399, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 88, beds: 121, phone: "912611720" },
+        { name: "فندق الباشا", type: "", lat: 32.88719, lng: 13.17608, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "913391271" },
+        { name: "فندق السلطان", type: "", lat: 32.89231, lng: 13.19688, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 66, beds: 132, phone: "" },
+        { name: "الدلتا للشقق الفندقية 1", type: "", lat: 32.84882, lng: 13.29394, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 48, beds: 192, phone: "092-2052963" },
+        { name: "الدلتا للشقق الفندقية 2", type: "", lat: 32.86091, lng: 13.19749, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 36, beds: 144, phone: "" },
+        { name: "اجنحة كراون للشقق الفندقية", type: "", lat: 32.8475, lng: 13.29381, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 8, beds: 16, phone: "946301234" },
+        { name: "أجنحة الفوانيس للشقق الفندقية", type: "", lat: 32.8946, lng: 13.2047, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 12, beds: 32, phone: "092-0161405" },
+        { name: "الماسة للأجنحة الفندقية", type: "", lat: 32.88728, lng: 13.18267, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 28, beds: 56, phone: "091-0496633" },
+        { name: "جوهرة السلام للشقق الفندقية", type: "", lat: 32.84695, lng: 13.29389, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 24, beds: 48, phone: "091-9832626" },
+        { name: "فنادق رويال جاردنز", type: "", lat: 32.88629, lng: 13.19013, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 16, beds: 32, phone: "919770742" },
+        { name: "فندق جاكرتا", type: "", lat: 32.88863, lng: 13.18665, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 70, beds: 140, phone: "091-6900028" },
+        { name: "فندق المتوسط", type: "", lat: 32.88922, lng: 13.18493, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 39, beds: 41, phone: "091-7980523" },
+        { name: "فندق الوادي", type: "", lat: 32.88846, lng: 13.18057, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "021-3346390" },
+        { name: "مساكن القدس للشقق الفندقية", type: "", lat: 32.87951, lng: 13.17949, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 26, beds: 52, phone: "091-1888626" },
+        { name: "شقق الرواد المفروشة", type: "", lat: 32.84575, lng: 13.1667, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 9, beds: 17, phone: "091-0628623" },
+        { name: "قصر العائلة للشقق الفندقية الفرع الثاني", type: "", lat: 32.89163, lng: 13.21628, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 18, beds: 63, phone: "091-8339252" },
+        { name: "فندق ناريـز ( NARIZ HOTEL)", type: "", lat: 32.89559, lng: 13.20266, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 81, beds: 125, phone: "091-8339253" },
+        { name: "فندق كيان", type: "", lat: 32.89062, lng: 13.1948, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 48, beds: 57, phone: "930745235" },
+        { name: "فندق سما وبلقيس", type: "", lat: 32.88947, lng: 13.17881, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "091-3601741" },
+        { name: "جولايا للشقق الفندقية", type: "", lat: 32.88071, lng: 13.19665, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 17, beds: 35, phone: "915095982" },
+        { name: "فندق البيت الراقي للشقق الفندقية", type: "", lat: 32.84095, lng: 13.25675, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 12, beds: 24, phone: "091-3258683" },
+        { name: "منازل الشط للشقق الفندقية", type: "", lat: 32.90408, lng: 13.23361, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 18, beds: 36, phone: "091-1045999" },
+        { name: "بيت النوران للشقق الفندقية", type: "", lat: 32.84898, lng: 13.28782, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 40, beds: 80, phone: "091-5267000" },
+        { name: "شركة العمد لايجار الشقق الفندقية", type: "", lat: 32.82608, lng: 13.25056, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 22, beds: 44, phone: "094-1853030" },
+        { name: "فندق السلطان", type: "", lat: 32.89231, lng: 13.19687, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 66, beds: 132, phone: "" },
+        { name: "فندق قلعة صفيت", type: "", lat: 32.893137, lng: 13.171082, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "092-7991222" },
+        { name: "فندق كريستال", type: "", lat: 32.888509, lng: 13.177715, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "092-6551212" },
+        { name: "إقامة قورينا الفاخرة", type: "", lat: 32.88687, lng: 13.19489, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 40, beds: 80, phone: "091-1947171" },
+        { name: "القبس لشقق الفندقيه", type: "", lat: 32.8519, lng: 13.26757, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 32, beds: 64, phone: "091-1386907" },
+        { name: "Oya Hotel فندق أويا", type: "3 نجوم", lat: 32.88905, lng: 13.17718, description: "فندق", category: "hotel", subCategory: "3stars", rooms: null, beds: null, phone: "021-3346036" },
+        { name: "فندق الديوان", type: "3 نجوم", lat: 32.88782, lng: 13.177471, description: "فندق", category: "hotel", subCategory: "3stars", rooms: null, beds: null, phone: "093-1662559" },
+        { name: "فندق نيو ستي", type: "3 نجوم", lat: 32.88784, lng: 13.176188, description: "فندق", category: "hotel", subCategory: "3stars", rooms: null, beds: null, phone: "091-1503999" },
+        { name: "فندق باب طرابلس", type: "5 نجوم", lat: 32.87239, lng: 13.17819, description: "فندق", category: "hotel", subCategory: "5stars", rooms: null, beds: null, phone: "918355454" },
+        { name: "فندق الدالي", type: "1 نجمة", lat: 32.88785, lng: 13.17488, description: "فندق", category: "hotel", subCategory: "1star", rooms: null, beds: null, phone: "" },
+        { name: "فندق سبراتا", type: "5 نجوم", lat: 32.88722, lng: 13.191319, description: "فندق", category: "hotel", subCategory: "5stars", rooms: null, beds: null, phone: "" },
+        { name: "فندق ليبوس", type: "3 نجوم", lat: 32.89705, lng: 13.20703, description: "فندق", category: "hotel", subCategory: "3stars", rooms: null, beds: null, phone: "091-2360596" },
+        { name: "Peacock Hotel And Resort", type: "4 نجوم", lat: 32.873821, lng: 13.317558, description: "فندق", category: "hotel", subCategory: "4stars", rooms: null, beds: null, phone: "091-0120121" },
+        { name: "دار الضيافة 2 للشقق الفندقية", type: "", lat: 32.83993, lng: 13.256248, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 16, beds: 32, phone: "091-5520505" },
+        { name: "فندق بالخير السياحي", type: "3 نجوم", lat: 32.8907, lng: 13.17726, description: "فندق", category: "hotel", subCategory: "3stars", rooms: null, beds: null, phone: "091-3107100" },
+        { name: "شقق البرنس", type: "5 نجوم", lat: 32.836532, lng: 13.263127, description: "شقق فندقية", category: "apartment", subCategory: "5stars", rooms: 8, beds: 16, phone: "094-2405951" },
+        { name: "بيوت العاصمة للشقق الفندقية", type: "4 نجوم", lat: 32.843787, lng: 13.248638, description: "شقق فندقية", category: "apartment", subCategory: "4stars", rooms: 12, beds: 24, phone: "091-1132009" },
+        { name: "فندق الكندى", type: "", lat: 32.89234, lng: 13.17305, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "213342510" },
+        { name: "فندق برج المدينة", type: "", lat: 32.88987, lng: 13.17303, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "925995929" },
+        { name: "فندق اللؤلؤة", type: "", lat: 32.88663, lng: 13.16297, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "928512028" },
+        { name: "فندق جولف", type: "", lat: 32.88649, lng: 13.19071, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "943111011" },
+        { name: "فندق النهر", type: "", lat: 32.8936, lng: 13.17113, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "214444690" },
+        { name: "فندق القنصل", type: "", lat: 32.89232, lng: 13.17137, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "927000696" },
+        { name: "فندق اليسر", type: "", lat: 32.8816, lng: 13.17601, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "213330911" },
+        { name: "فندق اجنحة قرطاج", type: "", lat: 32.89006, lng: 13.17774, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "926602357" },
+        { name: "فندق  أضواء قرطاج", type: "", lat: 32.89236, lng: 13.17257, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "924596733" },
+        { name: "فندق التوفيق بلازا", type: "", lat: 32.89108, lng: 13.193, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "910340752" },
+        { name: "فندق كيان 2", type: "", lat: 32.88216, lng: 13.17596, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "930913450" },
+        { name: "فندق الشاطئ الذهبى", type: "", lat: 32.88637, lng: 13.16245, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "910113316" },
+        { name: "دار السلام للشقق الفندقية", type: "", lat: 32.85361, lng: 13.23944, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 12, beds: 24, phone: "092-2007900" },
+        { name: "فندق صحراء ليبيا", type: "", lat: 32.88533, lng: 13.16299, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "926488206" },
+        { name: "فندق الشرق", type: "", lat: 32.89235, lng: 13.17231, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "213345888" },
+        { name: "فندق الكرامة", type: "", lat: 32.84505, lng: 13.09436, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "928433399" },
+        { name: "فندق نور الثريا السياحى", type: "", lat: 32.88938, lng: 13.17239, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "213346644" },
+        { name: "فندق الوحدة العربية", type: "", lat: 32.89181, lng: 13.1748, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "214449131" },
+        { name: "فندق الهناء", type: "", lat: 32.89193, lng: 13.17509, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "214445452" },
+        { name: "فندق صبراتة", type: "", lat: 32.89222, lng: 13.17402, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "213331845" },
+        { name: "فندق بوبة افريقيا", type: "", lat: 32.88845, lng: 13.17631, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "214441773" },
+        { name: "فندق الهانى", type: "", lat: 32.8926, lng: 13.174, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "213332173" },
+        { name: "فندق سينترو", type: "", lat: 32.89369, lng: 13.18131, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "913253720" },
+        { name: "فندق زهرة الشمس", type: "", lat: 32.88975, lng: 13.17626, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "911975061" },
+        { name: "فندق كليوبترا", type: "", lat: 32.8919, lng: 13.19321, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "917520404" },
+        { name: "فندق دار طرابلس", type: "", lat: 32.89191, lng: 13.19207, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "925033776" },
+        { name: "فندق الزيتونة", type: "", lat: 32.89049, lng: 13.19201, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "213345184" },
+        { name: "فندق برج المدينة", type: "", lat: 32.88988, lng: 13.17302, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "213345051" },
+        { name: "فندق النخلة", type: "", lat: 32.89079, lng: 13.19617, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "213344701" },
+        { name: "فندق الصولجان", type: "", lat: 32.88573, lng: 13.16296, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "213345617" },
+        { name: "فندق قصر الظهرة", type: "", lat: 32.89308, lng: 13.19423, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "213344693" },
+        { name: "فندق قورينا", type: "", lat: 32.89095, lng: 13.1935, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "213336128" },
+        { name: "فندق اكاكوس", type: "", lat: 32.89236, lng: 13.19143, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "213345193" },
+        { name: "فندق هارون", type: "", lat: 32.89047, lng: 13.19167, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "213345245" },
+        { name: "فندق طليطلة", type: "", lat: 32.89202, lng: 13.20382, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "914444268" },
+        { name: "فندق بيت الامان", type: "", lat: 32.89041, lng: 13.1919, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "213345531" },
+        { name: "فندق قرطاج", type: "", lat: 32.89235, lng: 13.17257, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "213345821" },
+        { name: "فندق البتراء", type: "", lat: 32.88851, lng: 13.17377, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "213345508" },
+        { name: "فندق الياقوتة", type: "", lat: 32.89129, lng: 13.17631, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "912182153" },
+        { name: "فندق العاصمة", type: "", lat: 32.88959, lng: 13.17404, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "213345864" },
+        { name: "فندق طرابلس الدولي", type: "", lat: 32.88994, lng: 13.1753, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "213344921" },
+        { name: "فندق اوال", type: "", lat: 32.88887, lng: 13.17211, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "213346258" },
+        { name: "فندق بيت الضيافة", type: "", lat: 32.8627, lng: 13.10091, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "21470888" },
+        { name: "فندق الخليج", type: "", lat: 32.88913, lng: 13.1757, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "912125336" },
+        { name: "فندق قلعة صفيت", type: "", lat: 32.89313, lng: 13.17107, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "915629902" },
+        { name: "فندق ريزيدينس", type: "", lat: 32.88867, lng: 13.19378, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "912611720" },
+        { name: "فندق قصر الياقوت", type: "", lat: 32.8913, lng: 13.17632, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "917250333" },
+        { name: "فندق المشكاة", type: "", lat: 32.89147, lng: 13.17974, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "214441792" },
+        { name: "فندق البشير", type: "", lat: 32.89176, lng: 13.17164, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "944188274" },
+        { name: "فندق الرواد", type: "", lat: 32.84566, lng: 13.16672, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "910628623" },
+        { name: "فندق القوس", type: "", lat: 32.89311, lng: 13.19366, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "213347115" },
+        { name: "فندق نيو سيتي", type: "", lat: 32.88782, lng: 13.1762, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "911503999" },
+        { name: "فندق فكتوريا", type: "", lat: 32.89132, lng: 13.19444, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "910024348" },
+        { name: "فندق رويال جاردنس", type: "", lat: 32.88628, lng: 13.19012, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "920214800" },
+        { name: "فندق الديوان", type: "", lat: 32.88782, lng: 13.17747, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "931662559" },
+        { name: "فندق التاج", type: "", lat: 32.8923, lng: 13.17315, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "915087800" },
+        { name: "حدائق المشتل للشقق الفندقية", type: "", lat: 32.85064, lng: 13.28383, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 12, beds: 24, phone: "92013677" },
+        { name: "المكان للشقق الفندقية", type: "", lat: 32.88933, lng: 13.17589, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 20, beds: 40, phone: "922020206" },
+        { name: "إقامة إيفا للشق الفندقية", type: "", lat: 32.83415, lng: 13.23122, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 20, beds: 40, phone: "925703091" },
+        { name: "والي للشقق الفندقية", type: "", lat: 32.905556, lng: 13.265857, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 16, beds: 32, phone: "923852321" },
+        { name: "فندق القلعة السياحي للشقق المفروشة", type: "", lat: 32.84635, lng: 13.16694, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 12, beds: 24, phone: "922591193" },
+        { name: "المجرة للشقق الفندقية", type: "", lat: 32.84615, lng: 13.31136, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 8, beds: 16, phone: "913731813" },
+        { name: "لمسة للشقق الفندقية", type: "", lat: 32.88966, lng: 13.18492, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 8, beds: 16, phone: "914384444" },
+        { name: "شقق فيلا ليبيا الفندقية", type: "", lat: 32.847428, lng: 13.259625, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 8, beds: 16, phone: "915633335" },
+        { name: "لبدة إفريقيا للشقق الفندقية", type: "", lat: 32.8536, lng: 13.23945, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 16, beds: 32, phone: "091‑4289704" },
+        { name: "جواهر العاصمة للشقق الفندقية", type: "", lat: 32.891888, lng: 13.21042, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 16, beds: 32, phone: "091-2707575" },
+        { name: "فندق السلطان داون تاون", type: "", lat: 32.887215, lng: 13.173253, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: null, beds: null, phone: "091-1127755" },
+        { name: "فندق القولف", type: "", lat: 32.8865106, lng: 13.19064642, description: "فندق", category: "hotel", subCategory: "unclassified", rooms: 8, beds: 16, phone: "094-3111011" },
+        { name: "اوكا لشقق الفندقيه vib", type: "", lat: 32.88826975, lng: 13.18071126, description: "شقق فندقية", category: "apartment", subCategory: "unclassified", rooms: 16, beds: 32, phone: "921420009" }
+    ];
+
+    // دمج جميع المواقع
+    const allSites = [...tourismSites, ...hotelsData];
+
+    // ---------- إحصائيات محسوبة ديناميكياً ----------
+    const totalHotels = hotelsData.filter(s => s.category === 'hotel').length;
+    const totalApartments = hotelsData.filter(s => s.category === 'apartment').length;
+    const totalRooms = hotelsData.reduce((acc, s) => acc + (s.rooms || 0), 0);
+    const totalBeds = hotelsData.reduce((acc, s) => acc + (s.beds || 0), 0);
+    const totalTourism = tourismSites.length;
+
+    const stats = {
+        'إجمالي الفنادق': totalHotels,
+        'شقق فندقية': totalApartments,
+        'معالم سياحية': totalTourism,
+        'إجمالي الغرف': totalRooms,
+        'إجمالي الأسرة': totalBeds,
+        'منشأة إيواء': totalHotels + totalApartments
+    };
+
+    // أيقونات لكل فئة رئيسية
+    const categoryIcons = {
+        tourism: 'fa-landmark',
+        hotel: 'fa-hotel',
+        apartment: 'fa-building'
+    };
+
+    // ألوان الفئات الرئيسية
+    const categoryColors = {
+        tourism: '#c44536',
+        hotel: '#3c887e',
+        apartment: '#b83b5e'
+    };
+
+    // ألوان فرعية للفنادق حسب التصنيف (اختياري)
+    const subCategoryColors = {
+        '5stars': '#d4af37',
+        '4stars': '#b0b0b0',
+        '3stars': '#cd7f32',
+        '2stars': '#6c757d',
+        '1star': '#8b4513',
+        'unclassified': '#1a4a7a'
+    };
+
+    // ---------- تهيئة الخريطة ----------
+    const map = L.map('map', {
+        zoomControl: true
+    }).setView([32.8872, 13.1913], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const markers = []; // تخزين كل الماركرز
+
+    // دالة لإنشاء أيقونة مخصصة حسب الفئة والفئة الفرعية
+    function createCustomIcon(site) {
+        let bgColor = categoryColors[site.category] || '#1a4a7a';
+        if (site.category === 'hotel' && subCategoryColors[site.subCategory]) {
+            bgColor = subCategoryColors[site.subCategory];
+        }
+        return L.divIcon({
+            html: `<div style="background-color: ${bgColor}; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3);"><i class="fas ${categoryIcons[site.category] || 'fa-map-pin'}" style="color: white; font-size: 18px;"></i></div>`,
+            className: 'custom-marker',
+            iconSize: [38, 38],
+            iconAnchor: [19, 38],
+            popupAnchor: [0, -38]
+        });
+    }
+
+    // إضافة جميع الماركرز
+    allSites.forEach(site => {
+        if (!site.lat || !site.lng) return;
+        const icon = createCustomIcon(site);
+        const marker = L.marker([site.lat, site.lng], { icon }).addTo(map);
+        marker.siteData = site;
+
+        // محتوى البوب أب
+        let details = '';
+        if (site.rooms || site.beds) {
+            details += `<p><i class="fas fa-bed"></i> الغرف: ${site.rooms || '?'} | الأسرة: ${site.beds || '?'}</p>`;
+        }
+        if (site.phone) {
+            details += `<p><i class="fas fa-phone"></i> ${site.phone}</p>`;
+        }
+
+        const popupContent = `
+            <div class="popup-header">
+                <i class="fas ${categoryIcons[site.category]}" style="margin-left: 8px;"></i>
+                ${site.name}
+            </div>
+            <div class="popup-body">
+                <p><i class="fas fa-tag"></i> ${site.type || 'غير مصنف'}</p>
+                <p><i class="fas fa-info-circle"></i> ${site.description || site.type || ''}</p>
+                ${details}
+            </div>
+        `;
+
+        marker.bindPopup(popupContent, { className: 'custom-popup', minWidth: 240 });
+
+        markers.push(marker);
+    });
+
+    // ---------- متغيرات الحالة ----------
+    let mainFilter = 'all'; // all, tourism, hotel, apartment
+    let subFilter = 'all'; // all, 5stars, 4stars, ...
+    let searchTerm = '';
+
+    // ---------- دوال التصفية والعرض ----------
+    function filterSites() {
+        const filtered = allSites.filter(site => {
+            // تطبيق الفلتر الرئيسي
+            if (mainFilter !== 'all' && site.category !== mainFilter) return false;
+            // تطبيق الفلتر الفرعي (فقط إذا كان الفلتر الرئيسي هو hotels أو apartments)
+            if (mainFilter === 'hotel' || mainFilter === 'apartment') {
+                if (subFilter !== 'all' && site.subCategory !== subFilter) return false;
+            }
+            // تطبيق البحث
+            if (searchTerm) {
+                const term = searchTerm.trim().toLowerCase();
+                return site.name.toLowerCase().includes(term) || 
+                       (site.type && site.type.toLowerCase().includes(term)) ||
+                       (site.description && site.description.toLowerCase().includes(term));
+            }
+            return true;
+        });
+
+        // إخفاء/إظهار الماركرز
+        markers.forEach(marker => {
+            const site = marker.siteData;
+            const shouldShow = filtered.includes(site);
+            if (shouldShow) {
+                if (!map.hasLayer(marker)) marker.addTo(map);
+            } else {
+                if (map.hasLayer(marker)) map.removeLayer(marker);
+            }
+        });
+
+        renderSitesList(filtered);
+    }
+
+    function renderSitesList(sites) {
+        const container = document.getElementById('sitesList');
+        if (!container) return;
+
+        if (sites.length === 0) {
+            container.innerHTML = '<div style="text-align: center; padding: 30px; color: #888;"><i class="fas fa-search" style="font-size: 2rem; margin-bottom: 10px;"></i><br>لا توجد نتائج</div>';
+            return;
+        }
+
+        let html = '';
+        sites.forEach(site => {
+            let iconColor = categoryColors[site.category] || '#1a4a7a';
+            if (site.category === 'hotel' && subCategoryColors[site.subCategory]) {
+                iconColor = subCategoryColors[site.subCategory];
+            }
+            html += `
+                <div class="site-item" data-lat="${site.lat}" data-lng="${site.lng}" data-name="${site.name}">
+                    <div class="site-icon" style="background: ${iconColor};">
+                        <i class="fas ${categoryIcons[site.category] || 'fa-map-pin'}"></i>
+                    </div>
+                    <div class="site-info">
+                        <div class="site-name">${site.name}</div>
+                        <div class="site-type"><i class="fas ${categoryIcons[site.category]}"></i> ${site.type || site.description || ''}</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+
+        document.querySelectorAll('.site-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const lat = parseFloat(this.dataset.lat);
+                const lng = parseFloat(this.dataset.lng);
+                const name = this.dataset.name;
+                map.setView([lat, lng], 16);
+                const marker = markers.find(m => m.siteData.name === name);
+                if (marker) marker.openPopup();
+                if (window.innerWidth <= 768) {
+                    document.getElementById('sidebar').classList.add('closed');
+                }
+            });
+        });
+    }
+
+    function renderStats() {
+        const container = document.getElementById('statsContainer');
+        if (!container) return;
+        let html = '';
+        for (const [label, value] of Object.entries(stats)) {
+            let icon = 'fa-chart-bar';
+            if (label.includes('فنادق')) icon = 'fa-hotel';
+            else if (label.includes('شقق')) icon = 'fa-building';
+            else if (label.includes('معالم')) icon = 'fa-landmark';
+            else if (label.includes('غرف')) icon = 'fa-door-open';
+            else if (label.includes('أسرة')) icon = 'fa-bed';
+            else if (label.includes('إيواء')) icon = 'fa-home';
+            html += `
+                <div class="stat-card">
+                    <i class="fas ${icon}"></i>
+                    <div class="stat-value">${value}</div>
+                    <div class="stat-label">${label}</div>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+    }
+
+    function renderSubFilter() {
+        const container = document.getElementById('subFilterButtons');
+        if (!container) return;
+
+        const subCategories = ['all', '5stars', '4stars', '3stars', '2stars', '1star', 'unclassified'];
+        const subCategoryNames = {
+            all: 'الكل',
+            '5stars': '5 نجوم',
+            '4stars': '4 نجوم',
+            '3stars': '3 نجوم',
+            '2stars': '2 نجمتان',
+            '1star': 'نجمة واحدة',
+            'unclassified': 'غير مصنف'
+        };
+
+        let html = '';
+        subCategories.forEach(cat => {
+            html += `<button class="filter-btn ${subFilter === cat ? 'active' : ''}" data-sub="${cat}"><i class="fas ${cat === 'all' ? 'fa-globe' : 'fa-star'}"></i> ${subCategoryNames[cat]}</button>`;
+        });
+
+        container.innerHTML = html;
+
+        document.querySelectorAll('#subFilterButtons .filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                subFilter = this.dataset.sub;
+                document.querySelectorAll('#subFilterButtons .filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                filterSites();
+            });
+        });
+    }
+
+    // ---------- أحداث واجهة المستخدم ----------
+    document.getElementById('search-input').addEventListener('input', function(e) {
+        searchTerm = e.target.value;
+        filterSites();
+    });
+
+    // أزرار الفلتر الرئيسي
+    document.querySelectorAll('.main-filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            mainFilter = this.dataset.main;
+            document.querySelectorAll('.main-filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            // إظهار/إخفاء الفلتر الفرعي
+            const subFilterSection = document.getElementById('subFilterSection');
+            if (mainFilter === 'hotel' || mainFilter === 'apartment') {
+                subFilterSection.style.display = 'block';
+                subFilter = 'all'; // إعادة تعيين الفلتر الفرعي
+                // تحديث نشاط أزرار الفلتر الفرعي (سيتم عبر renderSubFilter)
+            } else {
+                subFilterSection.style.display = 'none';
+                subFilter = 'all';
+            }
+            renderSubFilter(); // إعادة بناء أزرار الفلتر الفرعي
+            filterSites();
+        });
+    });
+
+    // تحكم الشريط الجانبي للموبايل
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('toggleSidebar');
+    const closeBtn = document.getElementById('closeSidebar');
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('closed');
+            const icon = toggleBtn.querySelector('i');
+            icon.className = sidebar.classList.contains('closed') ? 'fas fa-chevron-left' : 'fas fa-chevron-right';
+        });
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            sidebar.classList.add('closed');
+            if (toggleBtn) toggleBtn.querySelector('i').className = 'fas fa-chevron-left';
+        });
+    }
+
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            sidebar.classList.remove('closed');
+            if (toggleBtn) toggleBtn.querySelector('i').className = 'fas fa-chevron-right';
+        }
+    });
+
+    // إعدادات إضافية للخريطة
+    map.zoomControl.setPosition('bottomleft');
+    L.control.scale({ imperial: false, metric: true, position: 'bottomleft' }).addTo(map);
+    map.on('click', () => map.closePopup());
+
+    // ---------- تهيئة العرض ----------
+    renderStats();
+    renderSubFilter();
+    filterSites(); // يعرض القائمة الكاملة
+})();
+</script>
 </body>
 </html>
